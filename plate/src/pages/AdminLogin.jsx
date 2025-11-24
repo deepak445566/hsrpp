@@ -27,7 +27,7 @@ const AdminLogin = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/login', {
+      const response = await fetch('https://hsrpp.onrender.com/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ const AdminLogin = () => {
 
   const fetchCurrentImage = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/display-image');
+      const response = await fetch('https://hsrpp.onrender.com/api/display-image');
       if (response.ok) {
         const data = await response.json();
         if (data.imageUrl) {
@@ -94,7 +94,7 @@ const AdminLogin = () => {
     formData.append('image', selectedImage);
 
     try {
-      const response = await fetch('http://localhost:5000/api/upload-image', {
+      const response = await fetch('https://hsrpp.onrender.com/api/upload-image', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

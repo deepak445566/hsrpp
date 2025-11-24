@@ -257,7 +257,7 @@ const HSRPOlderVehicles = () => {
                 <span className="text-4xl">🛡️</span>
               </div>
               <h3 className="text-2xl font-black text-gray-900 mb-4">100% Secure</h3>
-              <p className="text-gray-700 text-lg leading-relaxed">Government-approved plates with advanced security features</p>
+              <p className="text-gray-700 text-lg leading-relaxed">Plates with advanced security features</p>
             </div>
           </div>
         </section>

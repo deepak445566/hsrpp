@@ -104,7 +104,7 @@ const Instruct = () => {
                 <div className="text-3xl mr-4">💡</div>
                 <p className="text-gray-800 font-medium text-lg leading-relaxed">
                   Our goal at our agency is to help you observe this vital guideline. Our HSRP online book service lets you apply for
-                  your HSRP plate online, ensuring that your vehicle meets government regulations and has the latest security
+                  your HSRP plate online, ensuring that your vehicle meets latest security
                   technologies.
                 </p>
               </div>

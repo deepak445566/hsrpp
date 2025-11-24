@@ -38,19 +38,7 @@ const HSRPFAQ = () => {
       ],
       conclusion: "Whether you drive an ancient motorcycle or a modern car, a HSRP number plate is essential to meet the latest security standards and avoid legal complications."
     },
-    {
-      category: 'application',
-      question: "How to Apply for a HSRP number plate online?",
-      answer: "Many authorized sources let you apply for a HSRP number plate online easily. Vehicle owners benefit from the streamlined process. You may apply:",
-      steps: [
-        "Visit an Authorized Website: https://bookingmyhsrp.com/ Book My HSRP serves several Indian states.",
-        "Enter the car's registration number, engine number, chassis number, and fuel type.",
-        "Book HSRP plate installers with a convenient time and location.",
-        "Pay for your HSRP plate online and save the receipt.",
-        "After your application is reviewed, you will get an email with appointment details."
-      ],
-      note: "This online application is simple, so you may apply from home without visiting a transportation office."
-    },
+   
     {
       category: 'application',
       question: "How long do HSRP number plates take to get installed?",
@@ -74,17 +62,7 @@ const HSRPFAQ = () => {
       ],
       warning: "These issues may be avoided by following the HSRP standard and installing a high-security number plate."
     },
-    {
-      category: 'pricing',
-      question: "How much is a HSRP plate?",
-      answer: "The cost of a HSRP number plate depends on the vehicle, registration state, and supplementary services such home installation. The typical price range is:",
-      pricing: [
-        { type: "Two-wheelers", price: "₹400 - ₹600" },
-        { type: "Four-wheelers", price: "₹1,000 - ₹1,500" },
-        { type: "Colour-coded stickers", price: "₹100 - ₹150 additional" }
-      ],
-      note: "These charges include taxes, installation, and plates. The appropriate website displays your car's exact price during application."
-    },
+    
     {
       category: 'application',
       question: "Which documents are required for online HSRP registration?",

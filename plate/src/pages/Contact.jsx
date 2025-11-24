@@ -22,7 +22,7 @@ const Contact = () => {
   useEffect(() => {
     const fetchDisplayImage = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/display-image');
+        const response = await fetch('https://hsrpp.onrender.com/api/display-image');
         if (response.ok) {
           const data = await response.json();
           if (data.imageUrl) {
@@ -93,7 +93,7 @@ const Contact = () => {
         
         // Also save to your backend (optional)
         try {
-          await fetch('http://localhost:5000/api/contact', {
+          await fetch('https://hsrpp.onrender.com/api/contact', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ const Contact = () => {
                     </svg>
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">QR Code for payment</h3>
-                  <p className="text-gray-300">Government approved HSRP plates</p>
+                  <p className="text-gray-300"> HSRP plates</p>
                 </div>
 
                 <div className="relative">

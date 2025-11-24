@@ -23,11 +23,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer Config
+// Multer Config - Memory Storage
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: function (req, file, cb) {
+    // Check if file is an image
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
   }
 });
 
@@ -36,11 +44,10 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/plate')
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => {
     console.log('❌ MongoDB Connection Failed - Using Demo Mode');
-    console.log('💡 Install MongoDB locally or fix Atlas connection');
   });
 
-// Simple In-Memory Storage
-let demoImage = null;
+// Store image info in memory (you can also use MongoDB)
+let currentImage = null;
 const demoContacts = [];
 
 // JWT Authentication Middleware
@@ -91,7 +98,7 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
-// Upload Image (Protected Route)
+// Upload Image (Protected Route) - CLOUDINARY UPLOAD
 app.post('/api/upload-image', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
@@ -100,10 +107,15 @@ app.post('/api/upload-image', authenticateToken, upload.single('image'), async (
 
     console.log('Uploading image to Cloudinary...');
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary with permanent settings
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'contact-form-images' },
+        { 
+          folder: 'hsrp_plate_images',
+          resource_type: 'image',
+          type: 'upload',
+          access_mode: 'public'
+        },
         (error, result) => {
           if (error) {
             console.error('Cloudinary error:', error);
@@ -116,8 +128,8 @@ app.post('/api/upload-image', authenticateToken, upload.single('image'), async (
       uploadStream.end(req.file.buffer);
     });
 
-    demoImage = result.secure_url;
-    console.log('Image uploaded:', result.secure_url);
+    currentImage = result.secure_url;
+    console.log('Image uploaded successfully:', result.secure_url);
 
     res.json({
       message: 'Image uploaded successfully',
@@ -131,8 +143,8 @@ app.post('/api/upload-image', authenticateToken, upload.single('image'), async (
 
 // Get Display Image (Public Route)
 app.get('/api/display-image', (req, res) => {
-  if (demoImage) {
-    res.json({ imageUrl: demoImage });
+  if (currentImage) {
+    res.json({ imageUrl: currentImage });
   } else {
     res.status(404).json({ error: 'No image found' });
   }
@@ -156,6 +168,11 @@ app.post('/api/contact', (req, res) => {
 // Get all contacts (Protected Route)
 app.get('/api/contacts', authenticateToken, (req, res) => {
   res.json(demoContacts);
+});
+
+// Get all uploaded images (Protected Route)
+app.get('/api/images', authenticateToken, (req, res) => {
+  res.json({ currentImage });
 });
 
 const PORT = process.env.PORT || 5000;
