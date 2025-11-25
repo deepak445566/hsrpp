@@ -30,7 +30,6 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB
   },
   fileFilter: function (req, file, cb) {
-    // Check if file is an image
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -46,9 +45,23 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/plate')
     console.log('❌ MongoDB Connection Failed - Using Demo Mode');
   });
 
-// Store image info in memory (you can also use MongoDB)
-let currentImage = null;
-const demoContacts = [];
+// MongoDB Schemas
+const imageSchema = new mongoose.Schema({
+  imageUrl: { type: String, required: true },
+  publicId: { type: String, required: true },
+  uploadedAt: { type: Date, default: Date.now }
+});
+
+const contactSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  message: String,
+  timestamp: { type: Date, default: Date.now }
+});
+
+const Image = mongoose.model('Image', imageSchema);
+const Contact = mongoose.model('Contact', contactSchema);
 
 // JWT Authentication Middleware
 const authenticateToken = (req, res, next) => {
@@ -114,7 +127,10 @@ app.post('/api/upload-image', authenticateToken, upload.single('image'), async (
           folder: 'hsrp_plate_images',
           resource_type: 'image',
           type: 'upload',
-          access_mode: 'public'
+          access_mode: 'public',
+          use_filename: true,
+          unique_filename: true,
+          overwrite: false
         },
         (error, result) => {
           if (error) {
@@ -128,8 +144,25 @@ app.post('/api/upload-image', authenticateToken, upload.single('image'), async (
       uploadStream.end(req.file.buffer);
     });
 
-    currentImage = result.secure_url;
-    console.log('Image uploaded successfully:', result.secure_url);
+    // Delete previous image from Cloudinary and database
+    try {
+      const previousImage = await Image.findOne().sort({ uploadedAt: -1 });
+      if (previousImage) {
+        await cloudinary.uploader.destroy(previousImage.publicId);
+        await Image.findByIdAndDelete(previousImage._id);
+      }
+    } catch (deleteError) {
+      console.log('No previous image to delete or delete failed:', deleteError.message);
+    }
+
+    // Save new image to MongoDB
+    const newImage = new Image({
+      imageUrl: result.secure_url,
+      publicId: result.public_id
+    });
+    await newImage.save();
+
+    console.log('Image uploaded and saved successfully:', result.secure_url);
 
     res.json({
       message: 'Image uploaded successfully',
@@ -142,37 +175,70 @@ app.post('/api/upload-image', authenticateToken, upload.single('image'), async (
 });
 
 // Get Display Image (Public Route)
-app.get('/api/display-image', (req, res) => {
-  if (currentImage) {
-    res.json({ imageUrl: currentImage });
-  } else {
-    res.status(404).json({ error: 'No image found' });
+app.get('/api/display-image', async (req, res) => {
+  try {
+    const latestImage = await Image.findOne().sort({ uploadedAt: -1 });
+    if (latestImage) {
+      res.json({ imageUrl: latestImage.imageUrl });
+    } else {
+      res.status(404).json({ error: 'No image found' });
+    }
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    res.status(500).json({ error: 'Failed to fetch image' });
   }
 });
 
 // Contact Form (Public Route)
-app.post('/api/contact', (req, res) => {
+app.post('/api/contact', async (req, res) => {
   try {
     const formData = req.body;
-    demoContacts.push({ ...formData, timestamp: new Date() });
+    
+    // Save to MongoDB
+    const newContact = new Contact(formData);
+    await newContact.save();
     
     res.json({ 
       success: true, 
       message: 'Form submitted successfully'
     });
   } catch (error) {
+    console.error('Contact form error:', error);
     res.status(500).json({ error: 'Failed to submit form' });
   }
 });
 
 // Get all contacts (Protected Route)
-app.get('/api/contacts', authenticateToken, (req, res) => {
-  res.json(demoContacts);
+app.get('/api/contacts', authenticateToken, async (req, res) => {
+  try {
+    const contacts = await Contact.find().sort({ timestamp: -1 });
+    res.json(contacts);
+  } catch (error) {
+    console.error('Error fetching contacts:', error);
+    res.status(500).json({ error: 'Failed to fetch contacts' });
+  }
 });
 
 // Get all uploaded images (Protected Route)
-app.get('/api/images', authenticateToken, (req, res) => {
-  res.json({ currentImage });
+app.get('/api/images', authenticateToken, async (req, res) => {
+  try {
+    const images = await Image.find().sort({ uploadedAt: -1 });
+    res.json(images);
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    res.status(500).json({ error: 'Failed to fetch images' });
+  }
+});
+
+// Get latest image (Protected Route)
+app.get('/api/latest-image', authenticateToken, async (req, res) => {
+  try {
+    const latestImage = await Image.findOne().sort({ uploadedAt: -1 });
+    res.json(latestImage || {});
+  } catch (error) {
+    console.error('Error fetching latest image:', error);
+    res.status(500).json({ error: 'Failed to fetch latest image' });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
