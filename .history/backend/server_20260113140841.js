@@ -11,7 +11,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://bookingshsrp.com','https://delightful-cendol-d749e5.netlify.app', 'https://hsrpnumberplates.in', 'http://localhost:5173'],
+  origin: ['https://bookingshsrp.com','' 'https://hsrpnumberplates.in', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
